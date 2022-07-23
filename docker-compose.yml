@@ -2,6 +2,7 @@ version: '3.8'
 
 volumes:
   docker-postgres:
+  app:
 networks:
   postgres:
     name: rest-serivce
@@ -9,35 +10,35 @@ networks:
 
 services:
   app:
+    container_name: app
     build:
       dockerfile: ./Dockerfile
       context: .
     command: npm run start:dev
-    restart: always
+    restart: unless-stopped
     ports:
       - ${PORT}:${PORT}
     volumes:
-      - ./:/usr/app/
-      - /usr/app/node_modules
+      - .:/app/
+      - /app/node_modules
     environment:
       - PORT=${PORT}
-      - DB_SCHEMA=${POSTGRES_USER}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_USER}
-      - DB_HOST=${POSTGRES_USER}
     depends_on:
       - postgres
 
   postgres:
+    container_name: postgres
     build:
       context: .
       dockerfile: ./db/Dockerfile
-    restart: always
+    restart: unless-stopped
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    command: postgres -c logging_collector=on
     volumes:
-      - docker-postgres:/var/lib/postgresql/data
+      - docker-postgres:${PGDATA}
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+      - PGDATA:${PGDATA}

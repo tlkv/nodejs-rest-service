@@ -4,7 +4,7 @@ import { Track } from 'src/modules/tracks/entities/track.entity';
 import { UserData } from 'src/modules/users/entities/user.entity';
 
 type Favs = {
-  artists: Artist[];
+  artists: Artist[]; // string[]
   albums: Album[];
   tracks: Track[];
 };
