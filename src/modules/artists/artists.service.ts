@@ -46,24 +46,14 @@ export class ArtistsService {
     if (!currArtist) return;
     MemoryDb.artists = MemoryDb.artists.filter((i) => i.id !== id);
     MemoryDb.favorites.artists = MemoryDb.favorites.artists.filter(
-      (i) => i.id !== id,
+      (i) => i !== id,
     );
     MemoryDb.tracks.forEach((i) => {
       if (i.artistId === id) {
         i.artistId = null;
       }
     });
-    MemoryDb.favorites.tracks.forEach((i) => {
-      if (i.artistId === id) {
-        i.artistId = null;
-      }
-    });
     MemoryDb.albums.forEach((i) => {
-      if (i.artistId === id) {
-        i.artistId = null;
-      }
-    });
-    MemoryDb.favorites.albums.forEach((i) => {
       if (i.artistId === id) {
         i.artistId = null;
       }
