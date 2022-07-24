@@ -21,24 +21,28 @@ export class UsersController {
 
   @Get()
   getAll() {
-    return this.usersService.getAll();
+    return this.usersService.findAllDB();
+    //return this.usersService.getAll();
   }
 
   @Get(':id')
   getOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.usersService.getById(id, false);
+    return this.usersService.findOneDB(id);
+    //return this.usersService.getById(id, false);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    return this.usersService.createDB(createUserDto);
+    //return this.usersService.create(createUserDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.usersService.remove(id);
+    return this.usersService.deleteDB(id);
+    // return this.usersService.remove(id);
   }
 
   @Put(':id')

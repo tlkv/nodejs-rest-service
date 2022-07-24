@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { IsInt, IsString, IsUUID } from 'class-validator';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export class UserData {
   @IsUUID(4)
@@ -20,4 +21,21 @@ export class UserData {
 
   @IsInt()
   updatedAt: number;
+}
+
+@Entity('user')
+export class UserEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  login: string;
+
+  @Column()
+  password: string;
+
+  toResponse() {
+    const { id, login } = this;
+    return { id, login };
+  }
 }
