@@ -47,7 +47,7 @@ export class UsersService {
 
     if (updatedUser) {
       Object.assign(updatedUser, userDto);
-      return await this.userRepository.save(updatedUser);
+      return (await this.userRepository.save(updatedUser)).toResponse(); // don't show passw
     }
 
     throw new NotFoundException();

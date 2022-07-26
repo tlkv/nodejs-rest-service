@@ -47,16 +47,17 @@ export class UsersController {
 
   @Put(':id')
   update(
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: CreateUserDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ) {
-    if (updateUserDto.oldPassword === updateUserDto.newPassword) {
+    /*  if (updateUserDto.oldPassword === updateUserDto.newPassword) {
       throw new ForbiddenException('Password matches the old one');
     } else if (
       this.usersService.getPass(id).password !== updateUserDto.oldPassword
     ) {
       throw new ForbiddenException('Old password do not match');
-    }
-    return this.usersService.update(updateUserDto, id);
+    } 
+    return this.usersService.update(updateUserDto, id);*/
+    return this.usersService.updateDB(id, updateUserDto);
   }
 }
