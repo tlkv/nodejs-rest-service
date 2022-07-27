@@ -11,8 +11,8 @@ import {
   Put,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersService } from './users.service';
 
 @Controller('user')
 export class UsersController {
@@ -36,8 +36,8 @@ export class UsersController {
 
   @Put(':id')
   update(
-    @Body() updateUserDto: UpdateUserDto,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
   }

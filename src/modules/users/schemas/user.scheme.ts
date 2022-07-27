@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserScheme {
-  @ApiProperty({ example: '123' })
+  @ApiProperty({ example: 'id' })
   id!: string;
 
-  @ApiProperty({ example: '456' })
+  @ApiProperty({ example: 'login' })
   login!: string;
 }
