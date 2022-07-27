@@ -10,7 +10,7 @@ export class ArtistEntity {
   name: string;
 
   @Column()
-  grammy: string;
+  grammy: boolean;
 }
 export class Artist {
   id: string;

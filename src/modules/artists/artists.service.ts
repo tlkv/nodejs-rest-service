@@ -1,51 +1,79 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { MemoryDb } from 'src/services/db.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
+import { ArtistEntity } from './entities/artist.entity';
 
 @Injectable()
 export class ArtistsService {
-  // inj repository
-  create(createArtistDto: CreateArtistDto) {
+  constructor(
+    @InjectRepository(ArtistEntity)
+    private artistRepository: Repository<ArtistEntity>,
+  ) {}
+
+  async create(createArtistDto: CreateArtistDto) {
     const newArtist = {
       id: v4(),
       name: createArtistDto.name,
       grammy: createArtistDto.grammy,
     };
-    MemoryDb.artists.push(newArtist);
+    await this.artistRepository.save(newArtist);
+    //MemoryDb.artists.push(newArtist);
     return newArtist;
   }
 
-  findAll() {
-    return MemoryDb.artists;
+  async findAll() {
+    // return MemoryDb.artists;
+    const artists = await this.artistRepository.find();
+    return artists;
   }
 
-  findOne(id: string) {
-    const currArtist = MemoryDb.artists.find((i) => i.id === id);
+  async findOne(id: string) {
+    const artist = await this.artistRepository.findOne({ where: { id } });
+    console.log('artist found ', artist);
+    if (!artist) {
+      throw new NotFoundException('Artist not found');
+    }
+    return artist;
+    /* const currArtist = MemoryDb.artists.find((i) => i.id === id);
     if (!currArtist) {
       throw new NotFoundException('Artist not found');
     }
-    return currArtist;
+    return currArtist; */
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto) {
-    const currArtist = this.findOne(id);
+  async update(id: string, updateArtistDto: UpdateArtistDto) {
+    // const currArtist = this.findOne(id);
+    const currArtist = await this.artistRepository.findOne({ where: { id } });
+    console.log('currArtist found ', currArtist);
+    if (!currArtist) {
+      throw new NotFoundException('Artist not found');
+    }
     if (!currArtist) return;
-    const elemIndex = MemoryDb.artists.findIndex((i) => i.id === id);
+    //
+    const updatedArtist = { ...currArtist, ...updateArtistDto };
+    await this.artistRepository.save(updatedArtist);
+    return updatedArtist;
+
+    /* const elemIndex = MemoryDb.artists.findIndex((i) => i.id === id);
 
     MemoryDb.artists[elemIndex] = {
       ...MemoryDb.artists[elemIndex],
       ...updateArtistDto,
     };
 
-    return MemoryDb.artists[elemIndex];
+    return MemoryDb.artists[elemIndex]; */
   }
 
-  remove(id: string) {
-    const currArtist = this.findOne(id);
-    if (!currArtist) return;
-    MemoryDb.artists = MemoryDb.artists.filter((i) => i.id !== id);
+  async remove(id: string) {
+    const result = await this.artistRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Not found');
+    }
+
+    /* MemoryDb.artists = MemoryDb.artists.filter((i) => i.id !== id);
     MemoryDb.favorites.artists = MemoryDb.favorites.artists.filter(
       (i) => i !== id,
     );
@@ -58,6 +86,6 @@ export class ArtistsService {
       if (i.artistId === id) {
         i.artistId = null;
       }
-    });
+    }); */
   }
 }
