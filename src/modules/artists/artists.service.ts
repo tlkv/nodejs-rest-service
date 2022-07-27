@@ -6,6 +6,7 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Injectable()
 export class ArtistsService {
+  // inj repository
   create(createArtistDto: CreateArtistDto) {
     const newArtist = {
       id: v4(),

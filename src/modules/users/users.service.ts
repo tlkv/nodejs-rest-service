@@ -1,11 +1,9 @@
 import {
-  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { v4 } from 'uuid';
-import { MemoryDb } from 'src/services/db.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,119 +16,65 @@ export class UsersService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async createDB(userDto: UserDto) {
-    await this.isLoginExistsDB(userDto.login);
-    const createdUser = this.userRepository.create(userDto);
-    return (await this.userRepository.save(createdUser)).toResponse();
+  async create(userDto: UserDto) {
+    const createdUser = {
+      id: v4(),
+      login: userDto.login,
+      password: userDto.password,
+      version: 1,
+      createdAt: Math.floor(Date.now() / 1000),
+      updatedAt: Math.floor(Date.now() / 1000),
+    };
+    await this.userRepository.save(createdUser);
+    return this.excludePassword(createdUser);
   }
 
-  async findAllDB() {
+  async findAll() {
     const users = await this.userRepository.find();
-    return users.map((user) => user.toResponse());
+    return users.map((user) => this.excludePassword(user));
   }
 
-  async findOneDB(userId: string) {
+  async findOne(userId: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (user) return user.toResponse();
-    throw new NotFoundException();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.excludePassword(user);
   }
 
-  async updateDB(userId: string, userDto: UserDto) {
-    if (userDto.id) delete userDto.id;
-    const updatedUser = await this.userRepository.findOne({
+  async update(userId: string, userDto: UpdateUserDto) {
+    if (userDto.oldPassword === userDto.newPassword) {
+      throw new ForbiddenException('Password matches the old one');
+    }
+    const currUser = await this.userRepository.findOne({
       where: { id: userId },
     });
-
-    if (userDto.login !== updatedUser.login) {
-      await this.isLoginExistsDB(userDto.login);
+    if (!currUser) {
+      throw new NotFoundException('User not found');
     }
-
-    if (updatedUser) {
-      Object.assign(updatedUser, userDto);
-      return (await this.userRepository.save(updatedUser)).toResponse(); // don't show passw
+    if (currUser.password !== userDto.oldPassword) {
+      throw new ForbiddenException('Old password do not match');
     }
-
-    throw new NotFoundException();
+    const updatedUser = {
+      ...currUser,
+      version: currUser.version + 1,
+      password: userDto.newPassword,
+      updatedAt: Math.ceil(Date.now() / 1000),
+    };
+    await this.userRepository.save(updatedUser);
+    return this.excludePassword(updatedUser);
   }
 
-  async findByLoginDB(login: string) {
-    const user = await this.userRepository.findOne({ where: { login } });
-    if (user) return user;
-  }
-
-  async isLoginExistsDB(login: string) {
-    const user = await this.findByLoginDB(login);
-    if (user) throw new BadRequestException('Login already exists');
-  }
-
-  async deleteDB(userId: string) {
+  async remove(userId: string) {
     const result = await this.userRepository.delete(userId);
     if (result.affected === 0) {
       throw new NotFoundException('Not found');
     }
   }
 
-  /* --- */
-
-  getAll() {
-    return MemoryDb.users.map((i) => {
-      delete i.password;
-      return i;
-    });
-  }
-
-  getById(id: string, withPassword: boolean) {
-    const currUser = MemoryDb.users.find((i) => i.id === id);
-    if (!currUser) {
-      throw new NotFoundException('User not found');
-    }
-    const res = { ...currUser, id };
-    if (!withPassword) {
-      delete res.password;
-    }
-    return res;
-  }
-
-  create(userDto: CreateUserDto) {
-    const newUser = {
-      id: v4(),
-      login: userDto.login,
-      version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-
-    MemoryDb.users.push({ ...newUser, password: userDto.password });
-    return newUser;
-  }
-
-  remove(id: string) {
-    const currUser = this.getById(id, false);
-    if (!currUser) return;
-    MemoryDb.users = MemoryDb.users.filter((i) => i.id !== id);
-  }
-
-  update(updateUserDto: UpdateUserDto, id: string) {
-    const currUser = this.getById(id, true);
-    if (!currUser) return;
-    const elemIndex = MemoryDb.users.findIndex((i) => i.id === id);
-
-    MemoryDb.users[elemIndex] = {
-      ...MemoryDb.users[elemIndex],
-      version: MemoryDb.users[elemIndex].version + 1,
-      password: updateUserDto.newPassword,
-      updatedAt: Date.now(),
-    };
-
-    const res = { ...MemoryDb.users[elemIndex] };
-    delete res.password;
-    return res;
-  }
-
-  getPass(id: string) {
-    const currUser = this.getById(id, true);
-    return {
-      password: currUser.password,
-    };
+  excludePassword(user: UserEntity) {
+    const currentData = { ...user };
+    delete currentData.password;
+    return currentData;
   }
 }

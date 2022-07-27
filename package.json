@@ -23,7 +23,21 @@
     "docker:compose:rebuild": "docker compose up --build",
     "docker:compose:detached": "docker compose up -d --build",
     "docker:scan:app": "docker scan nodejs2022q2-service_app",
-    "docker:scan:db": "docker scan nodejs2022q2-service_postgres"
+    "docker:scan:db": "docker scan nodejs2022q2-service_postgres",
+    "typeorm:migration": "node ww.",
+    "typeorm1": "ts-node ./node_modules/typeorm/cli -d ./src/config/typeorm-migration.config.ts",
+    "migration:run": "npm run typeorm -- migration:run",
+    "typeorm2": "typeorm-ts-node-esm -d dist/ormconfig.js",
+    "db:drop": "npm run typeorm schema:drop",
+    "migration:create": "typeorm-ts-node-esm migration:create",
+    "migration:generate": "npm run typeorm migration:generate",
+    "migration:show": "npm run typeorm migration:show",
+    "migration:run1": "npm run typeorm migration:run",
+    "migration:revert": "npm run typeorm migration:revert",
+    "typeorm:migration:stream": "node ./node_modules/typeorm/cli migration:run -d src/ormconfig.ts",
+    "typeorm:generate:stream": "node ./node_modules/typeorm/cli migration:generate -n newTables -d migration",
+    "typeorm:create:stream": "node ./node_modules/typeorm/cli migration:create ./src/migration/post",
+    "typeorm:cutom:create:": "node ./node_modules/typeorm/cli migration:create ./src/migration/firstInstall"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
