@@ -32,7 +32,6 @@ export class ArtistsService {
 
   async findOne(id: string) {
     const artist = await this.artistRepository.findOne({ where: { id } });
-    console.log('artist found ', artist);
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
@@ -47,7 +46,6 @@ export class ArtistsService {
   async update(id: string, updateArtistDto: UpdateArtistDto) {
     // const currArtist = this.findOne(id);
     const currArtist = await this.artistRepository.findOne({ where: { id } });
-    console.log('currArtist found ', currArtist);
     if (!currArtist) {
       throw new NotFoundException('Artist not found');
     }

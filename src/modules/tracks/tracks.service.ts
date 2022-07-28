@@ -1,12 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { MemoryDb } from 'src/services/db.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { TrackEntity } from './entities/track.entity';
 
 @Injectable()
 export class TracksService {
-  create(createTrackDto: CreateTrackDto) {
+  constructor(
+    @InjectRepository(TrackEntity)
+    private trackRepository: Repository<TrackEntity>,
+  ) {}
+
+  async create(createTrackDto: CreateTrackDto) {
     const newTrack = {
       id: v4(),
       name: createTrackDto.name,
@@ -14,39 +21,60 @@ export class TracksService {
       artistId: createTrackDto.artistId,
       duration: createTrackDto.duration,
     };
-    MemoryDb.tracks.push(newTrack);
+    await this.trackRepository.save(newTrack);
+    //MemoryDb.tracks.push(newTrack);
     return newTrack;
   }
 
-  findAll() {
-    return MemoryDb.tracks;
+  async findAll() {
+    //return MemoryDb.tracks;
+    const tracks = await this.trackRepository.find();
+    return tracks;
   }
 
-  findOne(id: string) {
-    const currTrack = MemoryDb.tracks.find((i) => i.id === id);
+  async findOne(id: string) {
+    const track = await this.trackRepository.findOne({ where: { id } });
+    if (!track) {
+      throw new NotFoundException('Track not found');
+    }
+    return track;
+    /* const currTrack = MemoryDb.tracks.find((i) => i.id === id);
     if (!currTrack) {
       throw new NotFoundException('Track not found');
     }
-    return currTrack;
+    return currTrack; */
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto) {
-    const currTrack = this.findOne(id);
+  async update(id: string, updateTrackDto: UpdateTrackDto) {
+    // const currTrack = this.findOne(id);
+    const currTrack = await this.trackRepository.findOne({ where: { id } });
+    if (!currTrack) {
+      throw new NotFoundException('Track not found');
+    }
     if (!currTrack) return;
+    //
+    const updatedTrack = { ...currTrack, ...updateTrackDto };
+    await this.trackRepository.save(updatedTrack);
+    return updatedTrack;
+    /*  if (!currTrack) return;
     const elemIndex = MemoryDb.tracks.findIndex((i) => i.id === id);
     MemoryDb.tracks[elemIndex] = {
       ...MemoryDb.tracks[elemIndex],
       ...updateTrackDto,
     };
-    return MemoryDb.tracks[elemIndex];
+    return MemoryDb.tracks[elemIndex]; */
   }
 
-  remove(id: string) {
-    const currTrack = this.findOne(id);
+  async remove(id: string) {
+    const result = await this.trackRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Not found');
+    }
+    /* const currTrack = this.findOne(id);
     if (!currTrack) return;
     MemoryDb.tracks = MemoryDb.tracks.filter((i) => i.id !== id);
     MemoryDb.favorites.tracks = MemoryDb.favorites.tracks.filter(
       (i) => i !== id,
-    );
+    ); */
   }
 }
