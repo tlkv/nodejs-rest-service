@@ -1,7 +1,14 @@
 import { IsBoolean, IsString } from 'class-validator';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { AlbumEntity } from 'src/modules/albums/entities/album.entity';
 import { TrackEntity } from 'src/modules/tracks/entities/track.entity';
+import { FavoritesEntity } from 'src/modules/favorites/entities/favorite.entity';
 
 @Entity('artist')
 export class ArtistEntity {
@@ -19,6 +26,11 @@ export class ArtistEntity {
 
   @OneToMany(() => TrackEntity, (track) => track.artist)
   track: TrackEntity[];
+
+  @ManyToOne(() => FavoritesEntity, (favorite) => favorite.artists, {
+    onDelete: 'CASCADE',
+  })
+  favorites: FavoritesEntity;
 }
 export class Artist {
   id: string;

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
@@ -20,12 +24,10 @@ export class ArtistsService {
       grammy: createArtistDto.grammy,
     };
     await this.artistRepository.save(newArtist);
-    //MemoryDb.artists.push(newArtist);
     return newArtist;
   }
 
   async findAll() {
-    // return MemoryDb.artists;
     const artists = await this.artistRepository.find();
     return artists;
   }
@@ -36,33 +38,27 @@ export class ArtistsService {
       throw new NotFoundException('Artist not found');
     }
     return artist;
-    /* const currArtist = MemoryDb.artists.find((i) => i.id === id);
-    if (!currArtist) {
-      throw new NotFoundException('Artist not found');
+  }
+
+  async findEntity(id: string) {
+    const artist = await this.artistRepository.findOneBy({ id });
+    if (!artist) {
+      throw new UnprocessableEntityException(
+        `Artist with id ${id} does not exist`,
+      );
     }
-    return currArtist; */
+    return artist;
   }
 
   async update(id: string, updateArtistDto: UpdateArtistDto) {
-    // const currArtist = this.findOne(id);
     const currArtist = await this.artistRepository.findOne({ where: { id } });
     if (!currArtist) {
       throw new NotFoundException('Artist not found');
     }
     if (!currArtist) return;
-    //
     const updatedArtist = { ...currArtist, ...updateArtistDto };
     await this.artistRepository.save(updatedArtist);
     return updatedArtist;
-
-    /* const elemIndex = MemoryDb.artists.findIndex((i) => i.id === id);
-
-    MemoryDb.artists[elemIndex] = {
-      ...MemoryDb.artists[elemIndex],
-      ...updateArtistDto,
-    };
-
-    return MemoryDb.artists[elemIndex]; */
   }
 
   async remove(id: string) {
@@ -70,20 +66,5 @@ export class ArtistsService {
     if (result.affected === 0) {
       throw new NotFoundException('Not found');
     }
-
-    /* MemoryDb.artists = MemoryDb.artists.filter((i) => i.id !== id);
-    MemoryDb.favorites.artists = MemoryDb.favorites.artists.filter(
-      (i) => i !== id,
-    );
-    MemoryDb.tracks.forEach((i) => {
-      if (i.artistId === id) {
-        i.artistId = null;
-      }
-    });
-    MemoryDb.albums.forEach((i) => {
-      if (i.artistId === id) {
-        i.artistId = null;
-      }
-    }); */
   }
 }

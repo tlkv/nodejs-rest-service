@@ -1,6 +1,7 @@
 import { IsInt, IsString, IsUUID } from 'class-validator';
 import { AlbumEntity } from 'src/modules/albums/entities/album.entity';
 import { ArtistEntity } from 'src/modules/artists/entities/artist.entity';
+import { FavoritesEntity } from 'src/modules/favorites/entities/favorite.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('track')
@@ -29,6 +30,11 @@ export class TrackEntity {
     onDelete: 'SET NULL',
   })
   artist: ArtistEntity[];
+
+  @ManyToOne(() => FavoritesEntity, (favorite) => favorite.tracks, {
+    onDelete: 'CASCADE',
+  })
+  favorites: FavoritesEntity;
 }
 
 export class Track {

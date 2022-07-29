@@ -8,5 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([TrackEntity])],
   controllers: [TracksController],
   providers: [TracksService],
+  exports: [TracksService],
 })
 export class TracksModule {}
