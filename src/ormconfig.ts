@@ -4,6 +4,7 @@ import { DataSourceOptions } from 'typeorm';
 dotenv.config();
 
 export default {
+  // migrationsTableName
   type: 'postgres',
   host: process.env.POSTGRES_HOST as string,
   port: parseInt(process.env.POSTGRES_PORT as string, 10) as number,
@@ -15,20 +16,3 @@ export default {
   migrations: ['dist/**/migration/*js'],
   migrationsRun: false, // true
 } as DataSourceOptions;
-
-/* export const config: DataSourceOptions = {
-  type: 'postgres',
-  host: 'postgres',
-  port: +(process.env.POSTGRES_PORT as string) as number,
-  username: process.env.POSTGRES_USER as string,
-  password: process.env.POSTGRES_PASSWORD as string,
-  database: process.env.POSTGRES_DB as string,
-  entities: [
-    UserEntity,
-    ArtistEntity,
-    AlbumEntity,
-    TrackEntity,
-    FavoritesEntity,
-  ],
-  synchronize: true,
-}; */
