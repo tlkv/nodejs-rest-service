@@ -19,17 +19,17 @@ export class FavoritesService {
   }
 
   async getAll() {
-    const [favorites] = await this.favoritesRepository.find({
+    const favorites = await this.favoritesRepository.find({
       relations: {
         albums: true,
         artists: true,
         tracks: true,
       },
     });
-    if (!favorites) {
+    if (!favorites[0]) {
       this.favoritesRepository.save({});
     }
-    return favorites;
+    return favorites[0];
   }
 
   async createTrack(id: string) {
