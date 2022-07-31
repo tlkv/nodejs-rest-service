@@ -1,11 +1,11 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UserDto {
-  id?: string; //
+  id?: string;
 
   @IsNotEmpty()
   @IsString()
-  login!: string; // !
+  login!: string;
 
   @IsNotEmpty()
   @IsString()
