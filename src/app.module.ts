@@ -9,6 +9,7 @@ import { FavoritesModule } from './modules/favorites/favorites.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import configService from './ormconfig';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     UsersModule,
@@ -18,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
     AlbumsModule,
     TracksModule,
     FavoritesModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
