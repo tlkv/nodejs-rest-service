@@ -9,6 +9,11 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserDto } from './dto/user.dto';
 import { UserEntity } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -17,10 +22,16 @@ export class UsersService {
   ) {}
 
   async create(userDto: UserDto) {
+    //console.log(typeof process.env.CRYPT_SALT);
+
+    const hashPassword = await bcrypt.hash(
+      userDto.password,
+      parseInt(process.env.CRYPT_SALT),
+    ); //
     const createdUser = {
       id: v4(),
       login: userDto.login,
-      password: userDto.password,
+      password: hashPassword, //userDto.password,
       version: 1,
       createdAt: Math.floor(Date.now() / 1000),
       updatedAt: Math.floor(Date.now() / 1000),
