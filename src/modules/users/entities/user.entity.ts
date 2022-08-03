@@ -22,6 +22,18 @@ export class UserEntity {
 
   @Column()
   updatedAt: number;
+
+  @Column({ default: '', nullable: true }) //non null?
+  accessToken: string;
+
+  @Column({ default: '', nullable: true }) //non null?
+  @Exclude()
+  refreshToken: string;
+}
+
+export interface UserTokenData {
+  id: string;
+  login: string;
 }
 
 export class UserData {

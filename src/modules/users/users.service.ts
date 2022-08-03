@@ -35,6 +35,8 @@ export class UsersService {
       version: 1,
       createdAt: Math.floor(Date.now() / 1000),
       updatedAt: Math.floor(Date.now() / 1000),
+      accessToken: '',
+      refreshToken: '',
     };
     await this.userRepository.save(createdUser);
     return this.excludePassword(createdUser);
@@ -57,19 +59,33 @@ export class UsersService {
     if (userDto.oldPassword === userDto.newPassword) {
       throw new ForbiddenException('Password matches the old one');
     }
-    const currUser = await this.userRepository.findOne({
-      where: { id: userId },
+
+    const currentUser = await this.userRepository.findOneBy({
+      id: userId,
     });
-    if (!currUser) {
+
+    if (!currentUser) {
       throw new NotFoundException('User not found');
     }
-    if (currUser.password !== userDto.oldPassword) {
+
+    const isCorrectPassword = await bcrypt.compare(
+      userDto.oldPassword,
+      currentUser.password,
+    );
+
+    if (!isCorrectPassword) {
       throw new ForbiddenException('Old password do not match');
     }
+
+    const hashPassword = await bcrypt.hash(
+      userDto.newPassword,
+      parseInt(process.env.CRYPT_SALT),
+    );
+
     const updatedUser = {
-      ...currUser,
-      version: currUser.version + 1,
-      password: userDto.newPassword,
+      ...currentUser,
+      version: currentUser.version + 1,
+      password: hashPassword,
       updatedAt: Math.ceil(Date.now() / 1000),
     };
     await this.userRepository.save(updatedUser);
