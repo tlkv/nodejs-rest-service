@@ -22,16 +22,14 @@ export class UsersService {
   ) {}
 
   async create(userDto: UserDto) {
-    //console.log(typeof process.env.CRYPT_SALT);
-
     const hashPassword = await bcrypt.hash(
       userDto.password,
       parseInt(process.env.CRYPT_SALT),
-    ); //
+    );
     const createdUser = {
       id: v4(),
       login: userDto.login,
-      password: hashPassword, //userDto.password,
+      password: hashPassword,
       version: 1,
       createdAt: Math.floor(Date.now() / 1000),
       updatedAt: Math.floor(Date.now() / 1000),
@@ -39,7 +37,7 @@ export class UsersService {
       refreshToken: '',
     };
     await this.userRepository.save(createdUser);
-    return this.excludePassword(createdUser);
+    return this.excludePasswordTokens(createdUser);
   }
 
   async findAll() {
@@ -102,6 +100,14 @@ export class UsersService {
   excludePassword(user: UserEntity) {
     const currentData = { ...user };
     delete currentData.password;
+    return currentData;
+  }
+
+  excludePasswordTokens(user: UserEntity) {
+    const currentData = { ...user };
+    delete currentData.password;
+    delete currentData.refreshToken;
+    delete currentData.accessToken;
     return currentData;
   }
 }

@@ -30,14 +30,18 @@ export class AuthService {
   }
 
   async getToken(user: UserEntity, params?: { refresh: boolean }) {
+    const expirationTime = params.refresh ? '10d' : '4h';
+    const key = params.refresh
+      ? (process.env.JWT_SECRET_REFRESH_KEY as string)
+      : (process.env.JWT_SECRET_KEY as string);
     return jwt.sign(
       {
-        id: user.id,
+        userId: user.id,
         login: user.login,
       },
-      process.env.JWT_SECRET_KEY as string,
+      key,
       {
-        expiresIn: params.refresh ? '10d' : '10m',
+        expiresIn: expirationTime,
       },
     );
   }
@@ -46,10 +50,15 @@ export class AuthService {
     const currentUser = await this.userRepository.findOneBy({
       login: loginDto.login,
     });
-
     if (!currentUser) {
       throw new ForbiddenException('No such user');
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const hashPassword = await bcrypt.hash(
+      loginDto.password,
+      parseInt(process.env.CRYPT_SALT),
+    );
 
     const isCorrectPassword = await bcrypt.compare(
       loginDto.password,
@@ -59,32 +68,33 @@ export class AuthService {
     if (!isCorrectPassword) {
       throw new ForbiddenException('Wrong password');
     }
-
     currentUser.accessToken = await this.getToken(currentUser, {
       refresh: false,
     });
-
     currentUser.refreshToken = await this.getToken(currentUser, {
       refresh: true,
     });
-
     const authUser = await this.userRepository.save(currentUser);
-    delete authUser.password;
-    return authUser;
-  }
 
+    return {
+      accessToken: authUser.accessToken,
+      refreshToken: authUser.refreshToken,
+    };
+  }
   async refresh(tokenDto: TokenDto) {
     if (!tokenDto.refreshToken) {
-      throw new UnauthorizedException('Dto is invalid');
+      throw new UnauthorizedException(
+        'Dto is invalid - no refresh token in body',
+      );
     }
     let currentUser: UserEntity;
     try {
       const decoded = (await jwt.verify(
         tokenDto.refreshToken,
-        process.env.JWT_SECRET_KEY,
+        process.env.JWT_SECRET_REFRESH_KEY,
       )) as UserTokenData;
       currentUser = await this.userRepository.findOneBy({
-        id: decoded.id,
+        id: decoded.userId,
       });
     } catch (err) {
       throw new ForbiddenException('Refresh token is invalid or expired');
@@ -101,8 +111,8 @@ export class AuthService {
     await this.userRepository.save(currentUser);
 
     return {
-      refreshToken: currentUser.refreshToken,
       accessToken: currentUser.accessToken,
+      refreshToken: currentUser.refreshToken,
     };
   }
 }
