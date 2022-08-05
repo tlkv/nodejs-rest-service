@@ -10,7 +10,10 @@ import 'dotenv/config';
 const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: console,
+    //logger: ['log', 'error', 'warn', 'debug', 'verbose'], // 'log', 'error', 'warn', 'debug', and 'verbose'.
+  });
   const rootDirname = dirname(__dirname);
   const API = await readFile(join(rootDirname, 'doc', 'api.yaml'), 'utf-8');
   const document = parse(API);
