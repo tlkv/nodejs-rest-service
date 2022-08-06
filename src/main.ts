@@ -13,18 +13,41 @@ const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    //logger: ,
-    //logger: ['log', 'error', 'warn', 'debug', 'verbose'], // 'log', 'error', 'warn', 'debug', and 'verbose'.
+    /*     logger: ['error'], */
   });
   const configService = app.get(ConfigService);
-  // console.log('cService', configService.get());
-  // add config
-  app.useLogger(new LoggingService());
+  app.useLogger(new LoggingService(configService));
+
+  const loggingService = new LoggingService(configService);
+  loggingService.setContext('app');
+
+  process
+    .on('uncaughtException', (err) => {
+      loggingService.warn(`Uncaught exception: ${err.message}`, 'app');
+    })
+    .on('unhandledRejection', (err: Error) => {
+      loggingService.warn(`Unhandled rejection: ${err.message}`, 'app');
+    });
+
   const rootDirname = dirname(__dirname);
   const API = await readFile(join(rootDirname, 'doc', 'api.yaml'), 'utf-8');
   const document = parse(API);
   SwaggerModule.setup('doc', app, document);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(PORT);
+  loggingService.log('log', 'app', '11');
+  loggingService.verbose('verbose', 'app', '11');
+  loggingService.debug('debug', 'app', '11');
+  loggingService.warn('warn', 'app', '11');
+  loggingService.error('error', 'app', '11');
+
+  try {
+    const xxx = await fetch('www.google.com');
+  } catch {
+    console.log('rej');
+  }
+  //const xxx = await fetch('www.google.com');
+
+  console.log('level', configService.get<number>('LOGS_LEVEL'));
 }
 bootstrap();
