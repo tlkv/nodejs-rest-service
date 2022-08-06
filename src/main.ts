@@ -6,14 +6,20 @@ import { parse } from 'yaml';
 import { readFile } from 'fs/promises';
 import { ValidationPipe } from '@nestjs/common';
 import 'dotenv/config';
+import { LoggingService } from './modules/logger/logger.service';
+import { ConfigService } from '@nestjs/config';
 
 const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: console,
+    //logger: ,
     //logger: ['log', 'error', 'warn', 'debug', 'verbose'], // 'log', 'error', 'warn', 'debug', and 'verbose'.
   });
+  const configService = app.get(ConfigService);
+  // console.log('cService', configService.get());
+  // add config
+  app.useLogger(new LoggingService());
   const rootDirname = dirname(__dirname);
   const API = await readFile(join(rootDirname, 'doc', 'api.yaml'), 'utf-8');
   const document = parse(API);
