@@ -7,11 +7,12 @@ export class LoggingMiddleware implements NestMiddleware {
     response.on('finish', () => {
       if (response.statusCode < HttpStatus.BAD_REQUEST) {
         const message = `
-        \nRequest URL: ${request.originalUrl}
-        \nMethod: ${request.method}
-        \nQuery parameters: ${JSON.stringify(request.query)}
+        \nRequest URL: ${request.originalUrl}, Request method: ${
+          request.method
+        },
         \nBody - ${JSON.stringify(request.body)}
         \nParameters: ${JSON.stringify(request.params)}
+        \nQuery parameters: ${JSON.stringify(request.query)}
         \nResponse code: ${response.statusCode}
         `;
         Logger.log(message, 'RequestLogger');

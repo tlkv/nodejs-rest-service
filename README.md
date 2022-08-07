@@ -7,7 +7,7 @@ git clone https://github.com/tlkv/nodejs2022Q2-service.git
 cd nodejs2022Q2-service
 git checkout logging
 npm i
-(make .env file from .env.example if the former is not present)
+(make .env file from .env.example if .env is not present)
 
 npm run docker:compose
 OR

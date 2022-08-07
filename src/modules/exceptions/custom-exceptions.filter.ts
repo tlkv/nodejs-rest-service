@@ -53,13 +53,14 @@ export class CustomExceptionsFilter implements ExceptionFilter {
     request: UserRequestInterface,
   ): string => {
     const message = `
-    \nResponse Code: ${errorResponse.statusCode}
-    \nURL: ${request.url}
-    \nMethod: ${request.method}
-    \nUser: ${JSON.stringify(request.user ?? 'Not authorized')}
-    \nBody - ${JSON.stringify(request.body)}
+    \nResponse Code: ${errorResponse.statusCode}, URL: ${
+      request.url
+    }, Method: ${request.method}, user: ${JSON.stringify(
+      request.user ?? 'Not authorized',
+    )}
     \nError response - ${JSON.stringify(errorResponse)}
-    \nError message - ${errorResponse.message}\n`;
+    \nError message - ${errorResponse.message}
+    \nBody - ${JSON.stringify(request.body)}\n`;
     return message;
   };
 }
