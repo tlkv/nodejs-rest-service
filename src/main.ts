@@ -4,7 +4,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { dirname, join } from 'path';
 import { parse } from 'yaml';
 import { readFile } from 'fs/promises';
-import { Logger, LogLevel, ValidationPipe } from '@nestjs/common';
+import { LogLevel, ValidationPipe } from '@nestjs/common';
 import 'dotenv/config';
 import { LoggingService } from './modules/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    /* logger: false, */
     bufferLogs: true,
   });
   const configService = app.get(ConfigService);
@@ -41,18 +40,5 @@ async function bootstrap() {
   SwaggerModule.setup('doc', app, document);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(PORT);
-  loggingService.log('log', 'app' /* , '11' */);
-  loggingService.verbose('verbose', 'app' /* , '11' */);
-  loggingService.debug('debug', 'app' /* , '11' */);
-  loggingService.warn('warn', 'app' /* , '11' */);
-  loggingService.error('error', 'app' /* , '11' */);
-
-  /*  try {
-    const xxx = await fetch('www.google.com');
-  } catch {
-    console.log('rej');
-  } */
-  Logger.log('test');
-  // throw new Error('Ran out of coffee'); //test UnhandledRejection
 }
 bootstrap();
