@@ -9,7 +9,7 @@ export class LoggingService extends ConsoleLogger {
   constructor(currentLogLevels: LogLevel[]) {
     super();
     this.logLevels = currentLogLevels;
-    this.setLogLevels(currentLogLevels); // no real effect
+    this.setLogLevels(currentLogLevels);
   }
 
   logLevels: LogLevel[];
