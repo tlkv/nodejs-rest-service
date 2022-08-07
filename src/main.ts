@@ -4,7 +4,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { dirname, join } from 'path';
 import { parse } from 'yaml';
 import { readFile } from 'fs/promises';
-import { LogLevel, ValidationPipe } from '@nestjs/common';
+import { Logger, LogLevel, ValidationPipe } from '@nestjs/common';
 import 'dotenv/config';
 import { LoggingService } from './modules/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
@@ -17,7 +17,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
   const configService = app.get(ConfigService);
-  const level = configService.get('LOGS_LEVEL');
+  const level = configService.get('LOGS_LEVEL') || 4;
   const logLevels: LogLevel[] = ['debug', 'verbose', 'log', 'warn', 'error'];
   const currentLogLevels: LogLevel[] = logLevels.slice(0, +level + 1);
   console.log(`Current log level is ${level} - `, currentLogLevels);
@@ -29,10 +29,10 @@ async function bootstrap() {
 
   process
     .on('uncaughtException', (err) => {
-      loggingService.warn(`Uncaught exception: ${err.message}`, 'app');
+      loggingService.error(`Uncaught exception: ${err.message}`, 'app');
     })
     .on('unhandledRejection', (err: Error) => {
-      loggingService.warn(`Unhandled rejection: ${err.message}`, 'app');
+      loggingService.error(`Unhandled rejection: ${err.message}`, 'app');
     });
 
   const rootDirname = dirname(__dirname);
@@ -47,11 +47,12 @@ async function bootstrap() {
   loggingService.warn('warn', 'app' /* , '11' */);
   loggingService.error('error', 'app' /* , '11' */);
 
-  try {
+  /*  try {
     const xxx = await fetch('www.google.com');
   } catch {
     console.log('rej');
-  }
-  //const xxx = await fetch('www.google.com');
+  } */
+  Logger.log('test');
+  // throw new Error('Ran out of coffee'); //test UnhandledRejection
 }
 bootstrap();
