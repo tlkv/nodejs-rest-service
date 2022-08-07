@@ -4,7 +4,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { dirname, join } from 'path';
 import { parse } from 'yaml';
 import { readFile } from 'fs/promises';
-import { ValidationPipe } from '@nestjs/common';
+import { LogLevel, ValidationPipe } from '@nestjs/common';
 import 'dotenv/config';
 import { LoggingService } from './modules/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
@@ -13,12 +13,18 @@ const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    /*     logger: ['error'], */
+    /* logger: false, */
+    bufferLogs: true,
   });
   const configService = app.get(ConfigService);
-  app.useLogger(new LoggingService(configService));
+  const level = configService.get('LOGS_LEVEL');
+  const logLevels: LogLevel[] = ['debug', 'verbose', 'log', 'warn', 'error'];
+  const currentLogLevels: LogLevel[] = logLevels.slice(0, +level + 1);
+  console.log(`Current log level is ${level} - `, currentLogLevels);
 
-  const loggingService = new LoggingService(configService);
+  app.useLogger(new LoggingService(currentLogLevels));
+
+  const loggingService = new LoggingService(currentLogLevels);
   loggingService.setContext('app');
 
   process
@@ -35,11 +41,11 @@ async function bootstrap() {
   SwaggerModule.setup('doc', app, document);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(PORT);
-  loggingService.log('log', 'app', '11');
-  loggingService.verbose('verbose', 'app', '11');
-  loggingService.debug('debug', 'app', '11');
-  loggingService.warn('warn', 'app', '11');
-  loggingService.error('error', 'app', '11');
+  loggingService.log('log', 'app' /* , '11' */);
+  loggingService.verbose('verbose', 'app' /* , '11' */);
+  loggingService.debug('debug', 'app' /* , '11' */);
+  loggingService.warn('warn', 'app' /* , '11' */);
+  loggingService.error('error', 'app' /* , '11' */);
 
   try {
     const xxx = await fetch('www.google.com');
@@ -47,7 +53,5 @@ async function bootstrap() {
     console.log('rej');
   }
   //const xxx = await fetch('www.google.com');
-
-  console.log('level', configService.get<number>('LOGS_LEVEL'));
 }
 bootstrap();

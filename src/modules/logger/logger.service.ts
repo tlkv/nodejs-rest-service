@@ -4,51 +4,40 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LoggingService extends ConsoleLogger {
-  constructor(configService: ConfigService) {
+  constructor(currentLogLevels: LogLevel[]) {
     super();
-    const level = configService.get('LOGS_LEVEL');
-    console.log('thisLevel', level);
+    /*   const level = configService.get('LOGS_LEVEL');
     const logLevels: LogLevel[] = ['debug', 'verbose', 'log', 'warn', 'error'];
-
-    console.log('newLogLevs', logLevels.slice(0, +level + 1));
-
-    this.setLogLevels(logLevels.slice(0, +level + 1));
-    //const;
+    const currentLogLevels: LogLevel[] = logLevels.slice(0, +level + 1); */
+    this.logLevels = currentLogLevels;
+    this.setLogLevels(currentLogLevels); //
   }
+
+  logLevels: LogLevel[];
 
   //  constructor(private config: ConfigService) {
   log(message: string, ...optionalParams: string[]) {
+    if (!this.logLevels.includes('log')) return;
     super.log.apply(this, [`${message}`, optionalParams.join(' ')]);
   }
 
-  /**
-   * Write an 'error' level log.
-   */
   error(message: string, ...optionalParams: string[]) {
+    if (!this.logLevels.includes('error')) return;
     super.error.apply(this, [`${message}`, optionalParams.join(' ')]);
   }
 
-  /**
-   * Write a 'warn' level log.
-   */
   warn(message: string, ...optionalParams: string[]) {
+    if (!this.logLevels.includes('warn')) return;
     super.warn.apply(this, [`${message}`, optionalParams.join(' ')]);
   }
 
-  /**
-   * Write a 'debug' level log.
-   */
   debug(message: string, ...optionalParams: string[]) {
+    if (!this.logLevels.includes('debug')) return;
     super.debug.apply(this, [`${message}`, optionalParams.join(' ')]);
   }
 
-  /**
-   * Write a 'verbose' level log.
-   */
   verbose(message: string, ...optionalParams: string[]) {
+    if (!this.logLevels.includes('verbose')) return;
     super.verbose.apply(this, [`${message}`, optionalParams.join(' ')]);
   }
-  /**
-   * Write an 'error' level log.
-   */
 }
