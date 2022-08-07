@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { UserEntity } from '../users/entities/user.entity';
-
 export interface UserRequestInterface extends Request {
   user?: UserEntity;
 }

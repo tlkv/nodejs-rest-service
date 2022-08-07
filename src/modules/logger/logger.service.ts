@@ -1,5 +1,9 @@
 import { Injectable, Scope, ConsoleLogger, LogLevel } from '@nestjs/common';
 import * as fs from 'fs';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+const MAX_LOGS_SIZE = process.env.MAX_LOGS_SIZE || 2000;
 @Injectable({ scope: Scope.TRANSIENT })
 export class LoggingService extends ConsoleLogger {
   constructor(currentLogLevels: LogLevel[]) {
@@ -41,10 +45,17 @@ export class LoggingService extends ConsoleLogger {
   }
 
   writeToFile(message: string, type: string) {
-    if (fs.existsSync(`${type.toUpperCase()}.log`)) {
-      fs.appendFileSync(`${type.toUpperCase()}.log`, message + '\n');
+    const logFileName = `${type.toUpperCase()}.log`;
+    if (fs.existsSync(logFileName)) {
+      const stats = fs.statSync(logFileName);
+      const fileSize = Math.round(stats.size / 1024);
+      if (fileSize < MAX_LOGS_SIZE) {
+        fs.appendFileSync(logFileName, message + '\n', 'utf-8');
+      } else {
+        fs.writeFileSync(logFileName, message + '\n', 'utf-8');
+      }
     } else {
-      fs.writeFileSync(`${type.toUpperCase()}.log`, message + '\n');
+      fs.writeFileSync(logFileName, message + '\n', 'utf-8');
     }
   }
 }
