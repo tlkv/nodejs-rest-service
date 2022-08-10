@@ -46,7 +46,7 @@ export class TracksService {
     if (!currTrack) return;
     MemoryDb.tracks = MemoryDb.tracks.filter((i) => i.id !== id);
     MemoryDb.favorites.tracks = MemoryDb.favorites.tracks.filter(
-      (i) => i.id !== id,
+      (i) => i !== id,
     );
   }
 }

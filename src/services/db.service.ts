@@ -4,9 +4,9 @@ import { Track } from 'src/modules/tracks/entities/track.entity';
 import { UserData } from 'src/modules/users/entities/user.entity';
 
 type Favs = {
-  artists: Artist[];
-  albums: Album[];
-  tracks: Track[];
+  artists: string[];
+  albums: string[];
+  tracks: string[];
 };
 export class MemoryDb {
   static users: UserData[] = [];

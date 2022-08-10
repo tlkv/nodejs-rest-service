@@ -10,9 +10,16 @@
 ```
 git clone https://github.com/tlkv/nodejs2022Q2-service.git
 cd nodejs2022Q2-service
-git checkout rest-service
+git checkout containerization-docker
 npm i
-npm run start
+
+npm run docker:compose
+OR
+npm run docker:compose:rebuild (full rebuild)
+
+to scan images:
+npm run docker:scan:app
+npm run docker:scan:db
 ```
 
 ## Testing
