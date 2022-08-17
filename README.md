@@ -1,16 +1,11 @@
 # Home Library Service
 
-## Prerequisites
-
-- Git - [Download & Install Git](https://git-scm.com/downloads).
-- Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
-
-## Downloading
+## Downloading & running
 
 ```
 git clone https://github.com/tlkv/nodejs2022Q2-service.git
 cd nodejs2022Q2-service
-git checkout containerization-docker
+git checkout postgre-sql
 npm i
 
 npm run docker:compose

@@ -1,78 +1,82 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
-import { MemoryDb } from 'src/services/db.service';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { AlbumsService } from '../albums/albums.service';
+import { ArtistsService } from '../artists/artists.service';
+import { TracksService } from '../tracks/tracks.service';
+import { FavoritesEntity } from './entities/favorite.entity';
 
 @Injectable()
 export class FavoritesService {
-  findAll() {
-    return {
-      artists: MemoryDb.artists.filter((i) =>
-        MemoryDb.favorites.artists.includes(i.id),
-      ),
-      tracks: MemoryDb.tracks.filter((i) =>
-        MemoryDb.favorites.tracks.includes(i.id),
-      ),
-      albums: MemoryDb.albums.filter((i) =>
-        MemoryDb.favorites.albums.includes(i.id),
-      ),
-    };
+  constructor(
+    @InjectRepository(FavoritesEntity)
+    private favoritesRepository: Repository<FavoritesEntity>,
+    private artistsService: ArtistsService,
+    private albumsService: AlbumsService,
+    private tracksService: TracksService,
+  ) {
+    this.getAll();
   }
 
-  createTrack(id: string) {
-    const currTrack = MemoryDb.tracks.find((i) => i.id === id);
-    const currTrackFavs = MemoryDb.favorites.tracks.find((i) => i === id);
-    if (!currTrack || currTrackFavs) {
-      throw new UnprocessableEntityException();
+  async getAll() {
+    const favorites = await this.favoritesRepository.find({
+      relations: {
+        albums: true,
+        artists: true,
+        tracks: true,
+      },
+    });
+    if (!favorites[0]) {
+      this.favoritesRepository.save({});
     }
-    MemoryDb.favorites.tracks.push(id);
+    return favorites[0];
   }
 
-  removeTrack(id: string) {
-    const currTrack = MemoryDb.favorites.tracks.find((i) => i === id);
-    if (!currTrack) {
-      throw new NotFoundException();
-    }
-    MemoryDb.favorites.tracks = MemoryDb.favorites.tracks.filter(
-      (i) => i !== id,
-    );
+  async createTrack(id: string) {
+    const track = await this.tracksService.findEntity(id);
+    const favorites = await this.getAll();
+    favorites.tracks.push(track);
+    await this.favoritesRepository.save(favorites);
+    return track;
   }
 
-  createArtist(id: string) {
-    const currArtist = MemoryDb.artists.find((i) => i.id === id);
-    if (!currArtist) {
-      throw new UnprocessableEntityException();
-    }
-    MemoryDb.favorites.artists.push(id);
+  async removeTrack(id: string) {
+    const track = await this.tracksService.findOne(id);
+    const favorites = await this.getAll();
+    favorites.tracks = favorites.tracks.filter((item) => item.id !== id);
+    await this.favoritesRepository.save(favorites);
+    return track;
   }
 
-  removeArtist(id: string) {
-    const currArtist = MemoryDb.favorites.artists.find((i) => i === id);
-    if (!currArtist) {
-      throw new NotFoundException();
-    }
-    MemoryDb.favorites.artists = MemoryDb.favorites.artists.filter(
-      (i) => i !== id,
-    );
+  async createArtist(id: string) {
+    const artist = await this.artistsService.findEntity(id);
+    const favorites = await this.getAll();
+    favorites.artists.push(artist);
+    await this.favoritesRepository.save(favorites);
+    return artist;
   }
 
-  createAlbum(id: string) {
-    const currAlbum = MemoryDb.albums.find((i) => i.id === id);
-    if (!currAlbum) {
-      throw new UnprocessableEntityException();
-    }
-    MemoryDb.favorites.albums.push(id);
+  async removeArtist(id: string) {
+    const artist = await this.artistsService.findOne(id);
+    const favorites = await this.getAll();
+    favorites.artists = favorites.artists.filter((item) => item.id !== id);
+    await this.favoritesRepository.save(favorites);
+    return artist;
   }
 
-  removeAlbum(id: string) {
-    const currAlbum = MemoryDb.favorites.albums.find((i) => i === id);
-    if (!currAlbum) {
-      throw new NotFoundException();
-    }
-    MemoryDb.favorites.albums = MemoryDb.favorites.albums.filter(
-      (i) => i !== id,
-    );
+  async createAlbum(id: string) {
+    const album = await this.albumsService.findEntity(id);
+    const favorites = await this.getAll();
+    favorites.albums.push(album);
+    await this.favoritesRepository.save(favorites);
+    return album;
+  }
+
+  async removeAlbum(id: string) {
+    const album = await this.albumsService.findOne(id);
+    const favorites = await this.getAll();
+    favorites.albums = favorites.albums.filter((item) => item.id !== id);
+    await this.favoritesRepository.save(favorites);
+    return album;
   }
 }

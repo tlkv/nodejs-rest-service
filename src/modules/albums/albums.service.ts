@@ -1,58 +1,71 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { MemoryDb } from 'src/services/db.service';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { AlbumEntity } from './entities/album.entity';
 
 @Injectable()
 export class AlbumsService {
-  create(createAlbumDto: CreateAlbumDto) {
+  constructor(
+    @InjectRepository(AlbumEntity)
+    private albumRepository: Repository<AlbumEntity>,
+  ) {}
+
+  async create(createAlbumDto: CreateAlbumDto) {
     const newAlbum = {
       id: v4(),
       name: createAlbumDto.name,
       year: createAlbumDto.year,
       artistId: createAlbumDto.artistId,
     };
-    MemoryDb.albums.push(newAlbum);
+    await this.albumRepository.save(newAlbum);
     return newAlbum;
   }
 
-  findAll() {
-    return MemoryDb.albums;
+  async findAll() {
+    const albums = await this.albumRepository.find();
+    return albums;
   }
 
-  findOne(id: string) {
-    const currAlbum = MemoryDb.albums.find((i) => i.id === id);
+  async findOne(id: string) {
+    const album = await this.albumRepository.findOne({ where: { id } });
+    if (!album) {
+      throw new NotFoundException('Album not found');
+    }
+    return album;
+  }
+
+  async findEntity(id: string): Promise<AlbumEntity> {
+    const album = await this.albumRepository.findOneBy({ id });
+    if (!album) {
+      throw new UnprocessableEntityException(
+        `Album with id ${id} does not exist`,
+      );
+    }
+    return album;
+  }
+
+  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
+    const currAlbum = await this.albumRepository.findOne({ where: { id } });
     if (!currAlbum) {
       throw new NotFoundException('Album not found');
     }
-    return currAlbum;
+    if (!currAlbum) return;
+    const updatedAlbum = { ...currAlbum, ...updateAlbumDto };
+    await this.albumRepository.save(updatedAlbum);
+    return updatedAlbum;
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    const currAlbum = this.findOne(id);
-    if (!currAlbum) return;
-    const elemIndex = MemoryDb.albums.findIndex((i) => i.id === id);
-
-    MemoryDb.albums[elemIndex] = {
-      ...MemoryDb.albums[elemIndex],
-      ...updateAlbumDto,
-    };
-
-    return MemoryDb.albums[elemIndex];
-  }
-
-  remove(id: string) {
-    const currAlbum = this.findOne(id);
-    if (!currAlbum) return;
-    MemoryDb.albums = MemoryDb.albums.filter((i) => i.id !== id);
-    MemoryDb.favorites.albums = MemoryDb.favorites.albums.filter(
-      (i) => i !== id,
-    );
-    MemoryDb.tracks.forEach((i) => {
-      if (i.albumId === id) {
-        i.albumId = null;
-      }
-    });
+  async remove(id: string) {
+    const result = await this.albumRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Not found');
+    }
   }
 }
