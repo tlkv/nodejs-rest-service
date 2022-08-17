@@ -5,14 +5,19 @@
 ```
 git clone https://github.com/tlkv/nodejs2022Q2-service.git
 cd nodejs2022Q2-service
-git checkout postgre-sql
+git checkout auth
 npm i
+make .env file from .env.example (if the former is not present)
 
 npm run docker:compose
 OR
 npm run docker:compose:rebuild (full rebuild)
 
-to scan images:
+tests:
+npm run test:auth
+npm run test (without authorization)
+
+image scan:
 npm run docker:scan:app
 npm run docker:scan:db
 ```
